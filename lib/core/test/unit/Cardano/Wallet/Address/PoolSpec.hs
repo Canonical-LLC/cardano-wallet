@@ -2,7 +2,7 @@ module Cardano.Wallet.Address.PoolSpec
     ( spec
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Wallet.Address.Pool
     ( Pool, addresses, generator, prop_consistent, prop_fresh, prop_gap )

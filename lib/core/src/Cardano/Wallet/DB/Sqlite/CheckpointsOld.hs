@@ -33,7 +33,7 @@ module Cardano.Wallet.DB.Sqlite.CheckpointsOld
     )
     where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Address.Derivation
     ( XPub )
@@ -101,44 +101,28 @@ import Cardano.Wallet.Primitive.Types.TokenMap
     ( AssetId (..) )
 import Cardano.Wallet.Util
     ( invariant )
-import Control.Applicative
-    ( Alternative )
 import Control.Monad
-    ( MonadPlus, forM, forM_, unless, void, when )
+    ( MonadPlus )
 import Control.Monad.Class.MonadSTM
     ( MonadSTM (..) )
-import Control.Monad.IO.Class
-    ( MonadIO (..) )
-import Control.Monad.Trans.Class
-    ( lift )
 import Control.Monad.Trans.Except
     ( ExceptT (..), runExceptT )
 import Control.Monad.Trans.Maybe
     ( MaybeT (..) )
 import Control.Monad.Trans.Reader
     ( ReaderT (..) )
-import Data.Bifunctor
-    ( bimap, second )
 import Data.DBVar
     ( Store (..) )
-import Data.Functor
-    ( (<&>) )
 import Data.Generics.Internal.VL
     ( withIso )
-import Data.Generics.Internal.VL.Lens
-    ( view, (^.) )
 import Data.Map.Strict
     ( Map )
 import Data.Maybe
-    ( fromJust, isJust, isNothing )
-import Data.Proxy
-    ( Proxy (..) )
+    ( fromJust )
 import Data.Quantity
     ( Quantity (..) )
 import Data.Type.Equality
     ( type (==) )
-import Data.Typeable
-    ( Typeable )
 import Database.Persist.Sql
     ( Entity (..)
     , SelectOpt (..)
@@ -568,7 +552,7 @@ instance
             , SeqStateAddressSlot ==. sl
             , SeqStateAddressRole ==. UtxoExternal
             ] [Asc SeqStateAddressIndex]
-        pure $ SharedDiscoveries $ Map.fromList 
+        pure $ SharedDiscoveries $ Map.fromList
             [ (fingerprint, (toEnum $ fromIntegral ix, status))
             | SeqStateAddress _ _ addr ix _ status <- addrs
             , Right fingerprint <- [paymentKeyFingerprint addr]

@@ -17,7 +17,7 @@ module Test.Integration.Scenario.API.Shelley.TransactionsNew
     ( spec
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Address.Derivation
     ( XPub, xpubPublicKey )
@@ -100,36 +100,20 @@ import Cardano.Wallet.Primitive.Types.Tx
     )
 import Cardano.Wallet.Unsafe
     ( unsafeFromHex, unsafeMkMnemonic )
-import Control.Arrow
-    ( second )
 import Control.Monad
-    ( foldM_, forM_ )
-import Control.Monad.IO.Unlift
-    ( MonadIO (..), MonadUnliftIO (..), liftIO )
+    ( foldM_ )
 import Control.Monad.Trans.Resource
     ( runResourceT )
 import Data.Aeson
     ( toJSON, (.=) )
-import Data.Function
-    ( (&) )
-import Data.Functor
-    ( void )
-import Data.Generics.Internal.VL.Lens
-    ( view, (^.) )
 import Data.Generics.Sum
     ( _Ctor )
 import Data.Maybe
-    ( fromJust, isJust )
-import Data.Proxy
-    ( Proxy (..) )
+    ( fromJust )
 import Data.Quantity
     ( Quantity (..), mkPercentage )
 import Data.Ratio
     ( (%) )
-import Data.Text
-    ( Text )
-import Numeric.Natural
-    ( Natural )
 import Test.Hspec
     ( SpecWith, describe, pendingWith, shouldContain, shouldNotContain )
 import Test.Hspec.Expectations.Lifted
@@ -508,7 +492,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
         let expectedTxOutTarget = WalletOutput $ ApiWalletOutput
                 { address = addrDest
                 , amount = Quantity amt
-                , assets = ApiT TokenMap.empty
+                , assets = ApiT mempty
                 , derivationPath = NE.fromList
                     [ ApiT (DerivationIndex 2147485500)
                     , ApiT (DerivationIndex 2147485463)
@@ -579,7 +563,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
         let expectedTxOutTarget' = WalletOutput $ ApiWalletOutput
                 { address = addrDest
                 , amount = Quantity amt
-                , assets = ApiT TokenMap.empty
+                , assets = ApiT mempty
                 , derivationPath = NE.fromList
                     [ ApiT (DerivationIndex 2147485500)
                     , ApiT (DerivationIndex 2147485463)
@@ -603,7 +587,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
         let expectedTxOutSource = WalletOutput $ ApiWalletOutput
                 { address = addrSrc
                 , amount = Quantity $ initialAmt - (amt + fromIntegral expectedFee)
-                , assets = ApiT TokenMap.empty
+                , assets = ApiT mempty
                 , derivationPath = derPath
                 }
         let txCbor' = getFromResponse #transaction (HTTP.status202, Right $ ApiSerialisedTransaction signedTx)
@@ -810,8 +794,8 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
                 , expectField
                         (#balance . #available . #getQuantity)
                         (`shouldBe` amt)
-                , expectField (#assets . #available . #getApiT) (`shouldNotBe` TokenMap.empty)
-                , expectField (#assets . #total . #getApiT) (`shouldNotBe` TokenMap.empty)
+                , expectField (#assets . #available . #getApiT) (`shouldNotBe` mempty)
+                , expectField (#assets . #total . #getApiT) (`shouldNotBe` mempty)
                 ]
 
         eventually "Source wallet balance is decreased by (amt + expectedFee)" $ do
@@ -904,8 +888,8 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
                 , expectField
                         (#balance . #available . #getQuantity)
                         (`shouldBe` inTxAmt)
-                , expectField (#assets . #available . #getApiT) (`shouldNotBe` TokenMap.empty)
-                , expectField (#assets . #total . #getApiT) (`shouldNotBe` TokenMap.empty)
+                , expectField (#assets . #available . #getApiT) (`shouldNotBe` mempty)
+                , expectField (#assets . #total . #getApiT) (`shouldNotBe` mempty)
                 ]
 
         eventually "Source wallet balance is decreased by outTxAmt" $ do
@@ -1390,7 +1374,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
             [ expectResponseCode HTTP.status202
             , expectField (#fee . #getQuantity) (`shouldBe` 202_725)
             , expectField #assetsMinted (`shouldBe` ApiT tokens)
-            , expectField #assetsBurned (`shouldBe` ApiT TokenMap.empty)
+            , expectField #assetsBurned (`shouldBe` ApiT mempty)
             ]
 
         -- constructing burning asset tx in cardano-cli
@@ -1420,7 +1404,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
         verify rTx'
             [ expectResponseCode HTTP.status202
             , expectField (#fee . #getQuantity) (`shouldBe` 202_725)
-            , expectField #assetsMinted (`shouldBe` ApiT TokenMap.empty)
+            , expectField #assetsMinted (`shouldBe` ApiT mempty)
             , expectField #assetsBurned (`shouldBe` ApiT tokens)
             ]
 
@@ -1872,9 +1856,9 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
             ]
 
     it "TRANS_NEW_BALANCE_05/ADP-1286 - \
-        \I can balance correctly in case I need to spend my remaining ADA for fee" $ 
+        \I can balance correctly in case I need to spend my remaining ADA for fee" $
         \ctx -> runResourceT $ do
-        liftIO $ pendingWith 
+        liftIO $ pendingWith
             "ADP-1286 - ValueNotConservedUTxO: Transaction seems balanced incorrectly \
             \in case when less than minUtxOValue is left on the wallet"
         wa <- fixtureWalletWith @n ctx [3_000_000]
@@ -1883,7 +1867,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
         let expectedFee = 1_000_000
         let balancePayload = Json PlutusScenario.pingPong_1
         let hasExpectedFee = [expectField (#fee . #getQuantity) (`shouldBe` expectedFee)]
-        
+
         rTx <- request @ApiSerialisedTransaction ctx
             (Link.balanceTransaction @'Shelley wa) Default balancePayload
         verify rTx [ expectResponseCode HTTP.status202 ]
@@ -2060,7 +2044,7 @@ spec = describe "NEW_SHELLEY_TRANSACTIONS" $ do
                                 singleton $ AddressAmount
                                     { address = (addr, proxy)
                                     , amount  = Quantity 10_000_000
-                                    , assets  = ApiT TokenMap.empty
+                                    , assets  = mempty
                                     }
                             pure $ head . view #inputs <$> result
                     txOutRef <- fromEither =<< getFreshUTxO

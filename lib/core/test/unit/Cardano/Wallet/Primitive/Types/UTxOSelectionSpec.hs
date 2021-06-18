@@ -7,7 +7,7 @@ module Cardano.Wallet.Primitive.Types.UTxOSelectionSpec
     ( spec
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Wallet.Primitive.Types.Tx
     ( TxIn )
@@ -197,7 +197,7 @@ prop_fromIndexPair_isValid (u1, u2) =
 prop_fromIndex_toIndexPair :: UTxOIndex -> Property
 prop_fromIndex_toIndexPair u =
     UTxOSelection.toIndexPair (UTxOSelection.fromIndex u)
-    === (u, UTxOIndex.empty)
+    === (u, mempty)
 
 prop_fromIndexFiltered_toIndexPair :: (TxIn -> Bool) -> UTxOIndex -> Property
 prop_fromIndexFiltered_toIndexPair f u =
@@ -389,7 +389,7 @@ isValidSelectionNonEmpty s =
     isValidSelection s
     && UTxOSelection.isNonEmpty s
     && UTxOSelection.selectedSize s > 0
-    && UTxOSelection.selectedIndex s /= UTxOIndex.empty
+    && UTxOSelection.selectedIndex s /= mempty
     && not (null (UTxOSelection.selectedList s))
 
 --------------------------------------------------------------------------------

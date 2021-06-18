@@ -58,7 +58,7 @@ module Cardano.Wallet.Primitive.Model
     , utxo
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Wallet.Primitive.AddressDiscovery
     ( IsOurs (..) )
@@ -98,26 +98,14 @@ import Control.Monad.Extra
     ( mapMaybeM )
 import Control.Monad.Trans.State.Strict
     ( State, evalState, runState, state )
-import Data.Functor
-    ( (<&>) )
-import Data.Generics.Internal.VL.Lens
-    ( (^.) )
 import Data.Generics.Labels
     ()
-import Data.List.NonEmpty
-    ( NonEmpty (..) )
-import Data.Maybe
-    ( isJust )
 import Data.Quantity
-    ( Quantity )
+    ( Quantity (..) )
 import Data.Set
     ( Set )
-import Data.Word
-    ( Word32 )
 import Fmt
-    ( Buildable (..), indentF )
-import GHC.Generics
-    ( Generic )
+    ( indentF )
 
 import qualified Cardano.Wallet.Primitive.Types.TokenBundle as TB
 import qualified Cardano.Wallet.Primitive.Types.UTxO as UTxO

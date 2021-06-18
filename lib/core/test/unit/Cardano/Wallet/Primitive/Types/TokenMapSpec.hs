@@ -11,11 +11,11 @@ module Cardano.Wallet.Primitive.Types.TokenMapSpec
     ( spec
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Algebra.PartialOrd
     ( PartialOrd (..) )
-import Cardano.Numeric.Util
+import Cardano.Wallet.Numeric
     ( inAscendingPartialOrder )
 import Cardano.Wallet.Primitive.Types.TokenMap
     ( AssetId (..), Flat (..), Nested (..), TokenMap, difference )
@@ -46,34 +46,12 @@ import Data.Aeson
     ( FromJSON (..), ToJSON (..) )
 import Data.Aeson.QQ
     ( aesonQQ )
-import Data.Bifunctor
-    ( bimap, first, second )
 import Data.ByteString
     ( ByteString )
-import Data.Either
-    ( fromRight )
-import Data.Function
-    ( (&) )
-import Data.List.NonEmpty
-    ( NonEmpty (..) )
-import Data.Maybe
-    ( mapMaybe )
-import Data.Proxy
-    ( Proxy (..) )
 import Data.Ratio
     ( (%) )
 import Data.String.QQ
     ( s )
-import Data.Text
-    ( Text )
-import Data.Text.Class
-    ( fromText, toText )
-import Data.Typeable
-    ( Typeable )
-import Fmt
-    ( pretty )
-import Numeric.Natural
-    ( Natural )
 import System.FilePath
     ( (</>) )
 import Test.Hspec
@@ -321,7 +299,7 @@ prop_shrink_invariant :: TokenMap -> Property
 prop_shrink_invariant b = property $ all invariantHolds $ shrink b
 
 prop_empty_invariant :: Property
-prop_empty_invariant = property $ invariantHolds TokenMap.empty
+prop_empty_invariant = property $ invariantHolds mempty
 
 prop_singleton_invariant :: (AssetId, TokenQuantity) -> Property
 prop_singleton_invariant (asset, quantity) = property $
@@ -405,7 +383,7 @@ prop_fromNestedList assetQuantities = checkCoverage $ property $
 
 prop_empty_toFlatList :: Property
 prop_empty_toFlatList =
-    TokenMap.toFlatList TokenMap.empty === []
+    TokenMap.toFlatList mempty === []
 
 prop_singleton_toFlatList
     :: (AssetId, TokenQuantity) -> Property
@@ -476,7 +454,7 @@ prop_add_subtract_associative m1 m2 m3 =
 
 prop_subtract_null :: TokenMap -> Property
 prop_subtract_null m =
-    m `TokenMap.subtract` m === Just TokenMap.empty
+    m `TokenMap.subtract` m === Just mempty
 
 prop_difference_zero :: TokenMap -> Property
 prop_difference_zero x =
@@ -566,7 +544,7 @@ prop_intersection_empty x =
     checkCoverage $
     cover 50 (TokenMap.isNotEmpty x)
         "map is not empty" $
-    x `TokenMap.intersection` TokenMap.empty === TokenMap.empty
+    x `TokenMap.intersection` mempty === mempty
 
 prop_intersection_equality :: Property
 prop_intersection_equality =
@@ -623,7 +601,7 @@ prop_intersection_subset =
 
 prop_removeQuantity_isEmpty :: TokenMap -> Property
 prop_removeQuantity_isEmpty b =
-    F.foldl' TokenMap.removeQuantity b assets === TokenMap.empty
+    F.foldl' TokenMap.removeQuantity b assets === mempty
   where
     assets = fst <$> TokenMap.toFlatList b
 

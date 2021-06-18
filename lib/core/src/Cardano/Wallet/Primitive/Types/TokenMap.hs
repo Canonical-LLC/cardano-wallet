@@ -3,6 +3,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -40,7 +41,6 @@ module Cardano.Wallet.Primitive.Types.TokenMap
     , AssetId (..)
 
     -- * Construction
-    , empty
     , singleton
     , fromFlatList
     , fromNestedList
@@ -92,53 +92,35 @@ module Cardano.Wallet.Primitive.Types.TokenMap
 
     ) where
 
-import Prelude hiding
+import Cardano.Wallet.Prelude hiding
     ( filter, subtract )
 
 import Algebra.PartialOrd
     ( PartialOrd (..) )
-import Cardano.Numeric.Util
+import Cardano.Wallet.Numeric
     ( equipartitionNatural )
 import Cardano.Wallet.Primitive.Types.TokenPolicy
     ( TokenName, TokenPolicyId )
 import Cardano.Wallet.Primitive.Types.TokenQuantity
     ( TokenQuantity (..) )
-import Control.DeepSeq
-    ( NFData )
-import Control.Monad
-    ( guard, when, (<=<) )
 import Data.Aeson
     ( FromJSON (..), ToJSON (..), camelTo2, genericParseJSON, genericToJSON )
 import Data.Aeson.Types
     ( Options (..), Parser )
-import Data.Bifunctor
-    ( first )
-import Data.Functor
-    ( ($>) )
 import Data.Hashable
     ( Hashable (..), hashUsing )
-import Data.List.NonEmpty
-    ( NonEmpty (..) )
 import Data.Map.Strict
     ( Map )
 import Data.Map.Strict.NonEmptyMap
     ( NonEmptyMap )
-import Data.Maybe
-    ( fromMaybe, isJust )
 import Data.Ratio
     ( (%) )
 import Data.Set
     ( Set )
-import Data.Text.Class
-    ( toText )
 import Fmt
-    ( Buildable (..), Builder, blockListF', blockMapF )
-import GHC.Generics
-    ( Generic )
+    ( Builder, blockListF', blockMapF )
 import GHC.TypeLits
     ( ErrorMessage (..), TypeError )
-import Numeric.Natural
-    ( Natural )
 import Quiet
     ( Quiet (..) )
 
@@ -177,6 +159,7 @@ newtype TokenMap = TokenMap
         :: Map TokenPolicyId (NonEmptyMap TokenName TokenQuantity)
     }
     deriving stock (Eq, Generic)
+    deriving newtype Monoid
     deriving (Read, Show) via (Quiet TokenMap)
 
 -- | Token maps can be partially ordered, but there is no total ordering of
@@ -233,9 +216,6 @@ instance Hashable TokenMap where
 
 instance Semigroup TokenMap where
     (<>) = add
-
-instance Monoid TokenMap where
-    mempty = empty
 
 -- | A combination of a token policy identifier and a token name that can be
 --   used as a compound identifier.
@@ -428,18 +408,13 @@ instance ToJSON NestedTokenQuantity where
 -- Construction
 --------------------------------------------------------------------------------
 
--- | The empty token map.
---
-empty :: TokenMap
-empty = TokenMap mempty
-
 -- | Creates a singleton token map with just one token quantity.
 --
 -- If the specified token quantity is zero, then the resultant map will be
 -- equal to the 'empty' map.
 --
 singleton :: AssetId -> TokenQuantity -> TokenMap
-singleton = setQuantity empty
+singleton = setQuantity mempty
 
 -- | Creates a token map from a flat list.
 --
@@ -447,7 +422,7 @@ singleton = setQuantity empty
 -- its associated quantities will be added together in the resultant map.
 --
 fromFlatList :: [(AssetId, TokenQuantity)] -> TokenMap
-fromFlatList = F.foldl' acc empty
+fromFlatList = F.foldl' acc mempty
   where
     acc b (asset, quantity) = adjustQuantity b asset (<> quantity)
 
@@ -587,12 +562,12 @@ size = Set.size . getAssets
 -- | Returns true if and only if the given map is empty.
 --
 isEmpty :: TokenMap -> Bool
-isEmpty = (== empty)
+isEmpty = (== mempty)
 
 -- | Returns true if and only if the given map is not empty.
 --
 isNotEmpty :: TokenMap -> Bool
-isNotEmpty = (/= empty)
+isNotEmpty = (/= mempty)
 
 --------------------------------------------------------------------------------
 -- Quantities
@@ -739,7 +714,7 @@ equipartitionQuantities
     -> NonEmpty TokenMap
     -- ^ The partitioned maps.
 equipartitionQuantities m count =
-    F.foldl' accumulate (empty <$ count) (toFlatList m)
+    F.foldl' accumulate (mempty <$ count) (toFlatList m)
   where
     accumulate
         :: NonEmpty TokenMap

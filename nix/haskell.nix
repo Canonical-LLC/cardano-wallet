@@ -29,18 +29,19 @@ let
   stack-pkgs = import ./.stack.nix/default.nix;
 
   # When adding a new Cabal package, or removing, update this attrset.
-  # It's not automatically discovered from stack-pkgs yet.
+  # It's not yet automatically discovered from stack-pkgs.
   projectPackages = {
+    cardano-wallet-base = "lib/base";
     dbvar = "lib/dbvar";
     cardano-wallet-cli = "lib/cli";
     cardano-wallet-core-integration = "lib/core-integration";
     cardano-wallet-core = "lib/core";
     cardano-wallet-launcher = "lib/launcher";
-    cardano-numeric = "lib/numeric";
+    cardano-wallet-numeric = "lib/numeric";
     cardano-wallet = "lib/shelley";
     strict-non-empty-containers = "lib/strict-non-empty-containers";
     cardano-wallet-test-utils = "lib/test-utils";
-    text-class = "lib/text-class";
+    cardano-wallet-text-class = "lib/text-class";
   };
 
   pkg-set = haskell.mkStackPkgSet {

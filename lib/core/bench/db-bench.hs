@@ -41,18 +41,16 @@
 
 module Main where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Address.Derivation
     ( XPub, xpubFromBytes )
 import Cardano.BM.Configuration.Static
     ( defaultConfigStdout )
-import Cardano.BM.Data.Severity
-    ( Severity (..) )
 import Cardano.BM.Data.Trace
     ( Trace )
 import Cardano.BM.Data.Tracer
-    ( Tracer, filterSeverity )
+    ( filterSeverity )
 import Cardano.BM.Setup
     ( setupTrace_, shutdown )
 import Cardano.DB.Sqlite
@@ -63,8 +61,6 @@ import Cardano.DB.Sqlite
     )
 import Cardano.Mnemonic
     ( EntropySize, SomeMnemonic (..), entropyToMnemonic, genEntropy )
-import Cardano.Startup
-    ( withUtf8Encoding )
 import Cardano.Wallet.DB
     ( DBLayer (..), cleanDB )
 import Cardano.Wallet.DB.Sqlite
@@ -150,16 +146,14 @@ import Cardano.Wallet.Primitive.Types.Tx
     )
 import Cardano.Wallet.Primitive.Types.UTxO
     ( UTxO (..) )
+import Cardano.Wallet.Startup
+    ( withUtf8Encoding )
 import Cardano.Wallet.Unsafe
     ( someDummyMnemonic, unsafeRunExceptT )
 import Control.DeepSeq
     ( NFData (..), deepseq, force )
-import Control.Monad
-    ( join )
 import Control.Monad.Trans.Except
     ( mapExceptT )
-import Control.Tracer
-    ( contramap )
 import Criterion.Main
     ( Benchmark
     , Benchmarkable
@@ -173,32 +167,18 @@ import Crypto.Hash
     ( hash )
 import Data.ByteString
     ( ByteString )
-import Data.Either
-    ( fromRight )
-import Data.Functor
-    ( ($>) )
 import Data.Functor.Identity
     ( Identity (..) )
 import Data.Map.Strict
     ( Map )
-import Data.Maybe
-    ( fromMaybe )
-import Data.Proxy
-    ( Proxy (..) )
 import Data.Quantity
     ( Quantity (..) )
-import Data.Text
-    ( Text )
-import Data.Text.Class
-    ( fromText )
 import Data.Time.Clock.POSIX
     ( posixSecondsToUTCTime )
 import Data.Time.Clock.System
     ( SystemTime (..), systemToUTCTime )
-import Data.Word
-    ( Word64 )
 import Fmt
-    ( build, padLeftF, padRightF, pretty, (+|), (|+) )
+    ( padLeftF, padRightF )
 import System.Directory
     ( doesFileExist, getFileSize )
 import System.FilePath
@@ -210,7 +190,7 @@ import System.Random
 import Test.Utils.Resource
     ( unBracket )
 import UnliftIO.Exception
-    ( bracket, throwIO )
+    ( bracket )
 import UnliftIO.Temporary
     ( withSystemTempFile )
 
@@ -227,8 +207,8 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 
 main :: IO ()
-main = withUtf8Encoding $ withLogging $ \trace -> do
-    let tr = filterSeverity (pure . const Error) $ trMessageText trace
+main = withUtf8Encoding $ withLogging $ \tr' -> do
+    let tr = filterSeverity (pure . const Error) $ trMessageText tr'
     defaultMain
         [ withDB tr bgroupWriteUTxO
         , withDB tr bgroupReadUTxO
@@ -672,7 +652,6 @@ withDB
     :: forall s k.
         ( PersistAddressBook s
         , PersistPrivateKey (k 'RootK)
-        , WalletKey k
         )
     => Tracer IO WalletDBLog
     -> (DBLayer IO s k -> Benchmark)
@@ -696,7 +675,6 @@ setupDB
     :: forall s k.
         ( PersistAddressBook s
         , PersistPrivateKey (k 'RootK)
-        , WalletKey k
         )
     => Tracer IO WalletDBLog
     -> IO (BenchEnv s k)

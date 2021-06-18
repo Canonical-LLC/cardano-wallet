@@ -4,10 +4,10 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-{-# LANGUAGE TypeFamilies #-}
 -- |
 -- Copyright: © 2021 IOHK
 -- License: Apache-2.0
@@ -22,7 +22,7 @@ module Cardano.Wallet.DB.Sqlite.AddressBook
     )
   where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Address.Derivation
     ( XPub )
@@ -31,7 +31,6 @@ import Cardano.Wallet.Primitive.AddressDerivation
     , DerivationType (..)
     , Index (..)
     , KeyFingerprint (..)
-    , MkKeyFingerprint (..)
     , MkKeyFingerprint (..)
     , NetworkDiscriminant (..)
     , PaymentAddress (..)
@@ -46,16 +45,10 @@ import Cardano.Wallet.Primitive.Types.Address
     ( Address (..), AddressState (..) )
 import Data.Generics.Internal.VL
     ( Iso', iso, withIso )
-import Data.Kind
-    ( Type )
 import Data.Map.Strict
     ( Map )
-import Data.Proxy
-    ( Proxy (..) )
 import Data.Type.Equality
     ( type (==) )
-import Data.Typeable
-    ( Typeable )
 
 import qualified Cardano.Wallet.Address.Pool as AddressPool
 import qualified Cardano.Wallet.Primitive.AddressDiscovery.Random as Rnd
@@ -99,7 +92,7 @@ instance AddressBookIso (Seq.SeqState n k)
         in  iso from2 to2
 
 -- | Isomorphism for sequential address book.
-instance 
+instance
     ( MkKeyFingerprint key (Proxy n, key 'AddressK XPub)
     , GetPurpose key
     , SoftDerivation key

@@ -52,7 +52,8 @@ module Cardano.Wallet.DB.StateMachine
     , TestConstraints
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude hiding
+    ( lift )
 
 import Cardano.Address.Derivation
     ( XPrv )
@@ -183,19 +184,13 @@ import Cardano.Wallet.Primitive.Types.UTxO
 import Control.Foldl
     ( Fold (..) )
 import Control.Monad
-    ( forM_, replicateM, void, when )
-import Control.Monad.IO.Unlift
-    ( MonadIO )
+    ( replicateM )
 import Control.Monad.Trans.Except
     ( mapExceptT, runExceptT )
 import Crypto.Hash
     ( Blake2b_160, Digest, digestFromByteString, hash )
-import Data.Bifunctor
-    ( bimap, first )
 import Data.ByteString
     ( ByteString )
-import Data.Foldable
-    ( foldl', toList )
 import Data.Functor.Classes
     ( Eq1, Show1 )
 import Data.List.Extra
@@ -205,7 +200,7 @@ import Data.Map
 import Data.Map.Strict.NonEmptyMap
     ( NonEmptyMap )
 import Data.Maybe
-    ( catMaybes, fromJust, isJust, isNothing, mapMaybe )
+    ( catMaybes, fromJust )
 import Data.Quantity
     ( Percentage (..), Quantity (..) )
 import Data.Set
@@ -215,11 +210,11 @@ import Data.Time.Clock
 import Data.TreeDiff
     ( ToExpr (..), defaultExprViaShow, genericToExpr )
 import GHC.Generics
-    ( Generic, Generic1 )
+    ( Generic1 )
 import System.Random
     ( getStdRandom, randomR )
 import Test.Hspec
-    ( HasCallStack, SpecWith, describe, expectationFailure, it )
+    ( SpecWith, describe, expectationFailure, it )
 import Test.QuickCheck
     ( Arbitrary (..)
     , Args (..)
@@ -683,7 +678,7 @@ declareGenerator
 declareGenerator name f gen = (name, (f, gen))
 
 generatorWithoutId
-    :: forall s r. (Arbitrary (Wallet s), GenState s)
+    :: forall s r. GenState s
     => [(String, (Int, Gen (Cmd s (Reference WalletId r))))]
 generatorWithoutId =
     [ declareGenerator "CreateWallet" 5
@@ -699,7 +694,7 @@ generatorWithoutId =
     genId = MWid <$> elements ["a", "b", "c"]
 
 generatorWithWid
-    :: forall s r. (Arbitrary (Wallet s), GenState s)
+    :: forall s r. Arbitrary (Wallet s)
     => [Reference WalletId r]
     -> [(String, (Int, Gen (Cmd s (Reference WalletId r))))]
 generatorWithWid wids =
@@ -768,7 +763,7 @@ generatorWithWid wids =
         ]
 
 generatorWithTids
-    :: forall s r. (Arbitrary (Wallet s), GenState s, Eq (Reference WalletId r))
+    :: forall s r. Eq (Reference WalletId r)
     => [(Reference WalletId r, [Hash "Tx"])]
     -> [(String, (Int, Gen (Cmd s (Reference WalletId r))))]
 generatorWithTids tids =
@@ -973,7 +968,7 @@ instance ToExpr (RndState 'Mainnet) where
 instance (Show (key 'AccountK CC.XPub)) =>
     ToExpr (AddressPool
         (chain :: Role)
-        (key :: Depth -> * -> *)
+        (key :: Depth -> Type -> Type)
     ) where
     toExpr = defaultExprViaShow
 

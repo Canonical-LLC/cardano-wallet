@@ -34,7 +34,7 @@ module Cardano.Wallet.ApiSpec
     ( spec
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Wallet.Api
     ( Api )
@@ -63,32 +63,20 @@ import Cardano.Wallet.Primitive.Types.Address
     ( Address (..) )
 import Cardano.Wallet.Primitive.Types.RewardAccount
     ( RewardAccount (..) )
-import Control.Monad
-    ( forM_ )
 import Data.Aeson.QQ
     ( aesonQQ )
-import Data.Bifunctor
-    ( first )
-import Data.Function
-    ( (&) )
 import Data.IORef
     ( atomicModifyIORef, newIORef )
 import Data.List
     ( (\\) )
 import Data.Map.Strict
     ( Map )
-import Data.Maybe
-    ( mapMaybe )
-import Data.Proxy
-    ( Proxy (..) )
-import Data.Text
-    ( Text )
 import Data.Tuple
     ( swap )
 import Data.Type.Equality
     ( (:~:) (..), testEquality )
 import Data.Typeable
-    ( Typeable, typeRep )
+    ( typeRep )
 import Data.Void
     ( Void )
 import GHC.TypeLits
@@ -127,7 +115,7 @@ import Servant.API
 import Servant.API.Verbs
     ( NoContentVerb, ReflectMethod (..) )
 import Test.Hspec
-    ( HasCallStack, Spec, describe, it, runIO, xdescribe )
+    ( Spec, describe, it, runIO, xdescribe )
 import Test.Hspec.Extra
     ( parallel )
 import Type.Reflection
@@ -272,7 +260,7 @@ instance
 
         forM_
             [ (a,b) | a <- wellformed, b <- wellformed ]
-            (\(a,b) -> gSpec (\c -> toRequest a b c) toSpec)
+            (\(a,b) -> gSpec (toRequest a b) toSpec)
 
         -- The lambda above helps readability and make the pattern obvious
         {- HLINT ignore "Avoid lambda" -}
@@ -327,7 +315,6 @@ instance GenericApiSpec (Map [Text] [Method])
                     then Nothing
                     else Just (defaultRequest { pathInfo, requestMethod }, msg)
       where
-        for = flip map
         forMaybe = flip mapMaybe
         msg =
             "You've reached a known endpoint but I don't know how to handle the \
@@ -405,13 +392,13 @@ everyAllowedMethod proxy =
 class GEveryEndpoints api where
     gEveryEndpoint :: Proxy api -> [Request]
 
-    type MkPathRequest api :: *
+    type MkPathRequest api :: Type
     gEveryPathParam :: Proxy api -> Request -> MkPathRequest api
 
-    type MkBodyRequest api :: *
+    type MkBodyRequest api :: Type
     gEveryBodyParam :: Proxy api -> Request -> MkBodyRequest api
 
-    type MkHeaderRequest api :: *
+    type MkHeaderRequest api :: Type
     gEveryHeader :: Proxy api -> Request -> MkHeaderRequest api
 
     -- TODO
@@ -420,7 +407,7 @@ class GEveryEndpoints api where
     -- newtype QueryParam t = QueryParam Text
     --     deriving (Typeable)
     --
-    -- type MkQueryRequest api :: *
+    -- type MkQueryRequest api :: Type
     -- gEveryQueryParams :: Proxy api -> Request -> MkQueryRequest api
 
 instance

@@ -19,7 +19,7 @@ module Cardano.Wallet.Primitive.AddressDiscovery.SequentialSpec
     ( spec
     ) where
 
-import Prelude
+import Cardano.Wallet.Prelude
 
 import Cardano.Address.Derivation
     ( XPub )
@@ -81,34 +81,14 @@ import Cardano.Wallet.Unsafe
     ( someDummyMnemonic )
 import Cardano.Wallet.Util
     ( ShowFmt (..) )
-import Control.Arrow
-    ( first )
-import Control.Monad
-    ( forM, forM_, unless )
-import Control.Monad.IO.Class
-    ( liftIO )
 import Control.Monad.Trans.State.Strict
     ( execState, state )
-import Data.Function
-    ( (&) )
-import Data.Kind
-    ( Type )
 import Data.List
     ( elemIndex, (\\) )
-import Data.List.NonEmpty
-    ( NonEmpty )
-import Data.Maybe
-    ( isJust, isNothing )
-import Data.Proxy
-    ( Proxy (..) )
-import Data.Text.Class
-    ( TextDecodingError (..), fromText )
 import Data.Type.Equality
     ( type (==) )
 import Data.Typeable
-    ( Typeable, typeRep )
-import Data.Word
-    ( Word8 )
+    ( typeRep )
 import Test.Hspec
     ( Spec, describe, expectationFailure, it )
 import Test.Hspec.Extra
@@ -713,7 +693,7 @@ data Style =
 instance Show Style where show (Style proxy) = show (typeRep proxy)
 
 -- | Wrapper to encapsulate keys.
-data Key = forall (k :: Depth -> * -> *).
+data Key = forall (k :: Depth -> Type -> Type).
     ( Typeable k
     , Eq (k 'AccountK XPub)
     , Show (k 'AccountK XPub)
