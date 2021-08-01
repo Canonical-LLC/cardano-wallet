@@ -13,7 +13,7 @@
       specVersion = "1.10";
       identifier = {
         name = "cardano-wallet-text-class";
-        version = "2021.6.11";
+        version = "2021.12.15";
         };
       license = "Apache-2.0";
       copyright = "2018-2020 IOHK";

@@ -10,7 +10,7 @@
   {
     flags = { release = false; };
     package = {
-      specVersion = "1.10";
+      specVersion = "3.0";
       identifier = {
         name = "cardano-wallet-test-utils";
         version = "2021.12.15";
@@ -37,7 +37,6 @@
           (hsPkgs."file-embed" or (errorHandler.buildDepError "file-embed"))
           (hsPkgs."formatting" or (errorHandler.buildDepError "formatting"))
           (hsPkgs."hspec" or (errorHandler.buildDepError "hspec"))
-          (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
           (hsPkgs."either" or (errorHandler.buildDepError "either"))
           (hsPkgs."fmt" or (errorHandler.buildDepError "fmt"))
           (hsPkgs."generics-sop" or (errorHandler.buildDepError "generics-sop"))
@@ -56,7 +55,6 @@
           (hsPkgs."say" or (errorHandler.buildDepError "say"))
           (hsPkgs."template-haskell" or (errorHandler.buildDepError "template-haskell"))
           (hsPkgs."text" or (errorHandler.buildDepError "text"))
-          (hsPkgs."text-class" or (errorHandler.buildDepError "text-class"))
           (hsPkgs."time" or (errorHandler.buildDepError "time"))
           (hsPkgs."unliftio" or (errorHandler.buildDepError "unliftio"))
           (hsPkgs."unliftio-core" or (errorHandler.buildDepError "unliftio-core"))
