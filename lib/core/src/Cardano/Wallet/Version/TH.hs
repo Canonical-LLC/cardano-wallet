@@ -21,8 +21,6 @@ import System.IO
     ( hPutStrLn, stderr )
 import System.IO.Error
     ( isDoesNotExistError )
-import UnliftIO.Exception
-    ( handleJust )
 import UnliftIO.Process
     ( readProcessWithExitCode )
 
