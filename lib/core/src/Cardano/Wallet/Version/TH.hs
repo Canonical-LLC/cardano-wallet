@@ -15,8 +15,10 @@ import Language.Haskell.TH
     ( Exp (..), Lit (..), Q, runIO )
 import System.Exit
     ( ExitCode (..) )
+import System.IO
+    ( hPutStrLn, stderr )
 import System.IO.Error
-    ( ioeGetErrorType, isDoesNotExistErrorType )
+    ( isDoesNotExistError )
 import UnliftIO.Exception
     ( handleJust )
 import UnliftIO.Process
@@ -26,15 +28,19 @@ import UnliftIO.Process
 -- executed, then this will be an empty string.
 gitRevFromGit :: Q Exp
 gitRevFromGit = LitE . StringL <$> runIO runGitRevParse
-  where
-    runGitRevParse :: IO String
-    runGitRevParse = handleJust missingGit (const $ pure "") $ do
-        (exitCode, output, _) <-
-            readProcessWithExitCode "git" ["rev-parse", "--verify", "HEAD"] ""
-        pure $ case exitCode of
-            ExitSuccess -> output
-            _           -> ""
-    missingGit e =
-        if isDoesNotExistErrorType (ioeGetErrorType e)
-        then Just ()
-        else Nothing
+    where
+        runGitRevParse :: IO String
+        runGitRevParse = do
+            (exitCode, output, errorMessage) <- readProcessWithExitCode_ "git" ["rev-parse", "--verify", "HEAD"] ""
+            case exitCode of
+                ExitSuccess -> pure output
+                ExitFailure _ -> do
+                    hPutStrLn stderr $ "WARNING: " ++ errorMessage
+                    pure ""
+
+        readProcessWithExitCode_ :: FilePath -> [String] -> String -> IO (ExitCode, String, String)
+        readProcessWithExitCode_ cmd args input =
+            catch (readProcessWithExitCode cmd args input) $ \e ->
+                if isDoesNotExistError e
+                    then return (ExitFailure 127, "", show e)
+                    else return (ExitFailure 999, "", show e)
