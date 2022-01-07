@@ -11,6 +11,8 @@ module Cardano.Wallet.Version.TH
 
 import Prelude
 
+import Control.Exception
+    ( catch )
 import Language.Haskell.TH
     ( Exp (..), Lit (..), Q, runIO )
 import System.Exit
