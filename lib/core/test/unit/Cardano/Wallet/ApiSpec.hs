@@ -34,7 +34,8 @@ module Cardano.Wallet.ApiSpec
     ( spec
     ) where
 
-import Cardano.Wallet.Prelude
+import Cardano.Wallet.Prelude hiding
+    ( for )
 
 import Cardano.Wallet.Api
     ( Api )
@@ -127,7 +128,6 @@ import qualified Data.ByteString.Lazy as BL
 import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import qualified Servant
-
 
 spec :: Spec
 spec = parallel $ do
@@ -315,6 +315,7 @@ instance GenericApiSpec (Map [Text] [Method])
                     then Nothing
                     else Just (defaultRequest { pathInfo, requestMethod }, msg)
       where
+        for = flip map
         forMaybe = flip mapMaybe
         msg =
             "You've reached a known endpoint but I don't know how to handle the \
