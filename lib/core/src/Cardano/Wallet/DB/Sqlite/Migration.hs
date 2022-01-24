@@ -53,6 +53,7 @@ import Database.Persist.Class
 import Database.Persist.Types
     ( PersistValue (..), fromPersistValueText )
 
+import qualified Cardano.Wallet.Primitive.Passphrase.Types as W
 import qualified Cardano.Wallet.Primitive.AddressDerivation as W
 import qualified Cardano.Wallet.Primitive.AddressDiscovery.Sequential as Seq
 import qualified Cardano.Wallet.Primitive.Types as W
