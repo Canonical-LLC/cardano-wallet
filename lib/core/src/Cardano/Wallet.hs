@@ -416,6 +416,7 @@ import Cardano.Wallet.Transaction
     , ErrMkTransaction (..)
     , ErrSignTx (..)
     , ErrUpdateSealedTx (..)
+    , StakeCredWits
     , TransactionCtx (..)
     , TransactionLayer (..)
     , TxFeeUpdate (..)
@@ -1971,6 +1972,9 @@ signTransaction
      )
   => TransactionLayer k SealedTx
   -- ^ The way to interact with the wallet backend
+  -> StakeCredWits
+  -- ^ Include additional signing with stake credential or not.
+  -- Included when delegation action of the wallet is part of a transaction to be signed.
   -> Cardano.AnyCardanoEra
   -- ^ The era to operate in
   -> (Address -> Maybe (k 'AddressK XPrv, Passphrase "encryption"))
@@ -1985,7 +1989,7 @@ signTransaction
   -> SealedTx
   -- ^ The original transaction, with additional signatures added where
   -- necessary
-signTransaction tl era keyLookup (rootKey, rootPwd) utxo =
+signTransaction tl stakeCredWits era keyLookup (rootKey, rootPwd) utxo =
     let
         rewardAcnt :: (XPrv, Passphrase "encryption")
         rewardAcnt =
@@ -1996,7 +2000,7 @@ signTransaction tl era keyLookup (rootKey, rootPwd) utxo =
             TxOut addr _ <- UTxO.lookup i utxo
             pure addr
     in
-        addVkWitnesses tl era rewardAcnt keyLookup inputResolver
+        addVkWitnesses tl era stakeCredWits rewardAcnt keyLookup inputResolver
 
 -- | Produce witnesses and construct a transaction from a given selection.
 --
